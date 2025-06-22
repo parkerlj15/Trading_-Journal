@@ -17,6 +17,7 @@ If no output file is specified, it will create a file with "_cleaned" suffix.
 import csv
 import sys
 import os
+import io
 from pathlib import Path
 
 def clean_csv(input_file, output_file=None):
@@ -77,8 +78,9 @@ def clean_csv(input_file, output_file=None):
         if not header_line:
             raise ValueError("Header line (line 8) is empty.")
         
-        # Parse header
-        original_headers = [h.strip() for h in header_line.split(',')]
+        # Parse header using proper CSV parsing
+        csv_reader = csv.reader(io.StringIO(header_line))
+        original_headers = next(csv_reader)
         
         # Find indices of columns to keep
         column_indices = []
@@ -114,8 +116,9 @@ def clean_csv(input_file, output_file=None):
             if not line:  # Skip empty lines
                 continue
                 
-            # Split the line by comma
-            values = [v.strip() for v in line.split(',')]
+            # Parse the line using proper CSV parsing to handle quoted values with commas
+            csv_reader = csv.reader(io.StringIO(line))
+            values = next(csv_reader)
             
             # Check if line has enough columns
             if len(values) < max(column_indices) + 1:

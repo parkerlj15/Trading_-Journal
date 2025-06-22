@@ -201,29 +201,54 @@ app.post('/api/upload-csv', upload.single('csvFile'), (req, res) => {
                 return res.status(500).json({ error: 'Failed to read cleaned CSV' });
             }
 
-            const lines = data.trim().split('\n');
-            const headers = lines[0].split(',');
+            // Helper function to parse numbers that might be quoted and contain commas
+            const parseNumber = (value) => {
+                if (!value) return 0;
+                // Remove quotes and commas, then parse
+                const cleanValue = value.toString().replace(/[",]/g, '');
+                return parseFloat(cleanValue) || 0;
+            };
             
-            // Parse all trades from CSV first
+            // Parse CSV data properly
+            const lines = data.trim().split('\n');
             const csvTrades = [];
+            
             for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(',');
+                // Use a simple CSV parser that handles quoted values
+                const values = [];
+                let current = '';
+                let inQuotes = false;
                 
-                const trade = {
-                    closing_ref: values[0] || '',
-                    closed: values[1] || '',
-                    opening_ref: values[2] || '',
-                    opened: values[3] || '',
-                    market: values[4] || '',
-                    size: parseFloat(values[5]) || 0,
-                    opening_price: parseFloat(values[6]) || 0,
-                    closing_price: parseFloat(values[7]) || 0,
-                    pnl: parseFloat(values[8]) || 0,
-                    total: parseFloat(values[9]) || 0,
-                    trade_date: values[3] ? values[3].split(' ')[0] : ''
-                };
+                for (let j = 0; j < lines[i].length; j++) {
+                    const char = lines[i][j];
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                values.push(current.trim()); // Add the last value
                 
-                csvTrades.push(trade);
+                if (values.length >= 9) {
+                    const trade = {
+                        closing_ref: values[0] || '',
+                        closed: values[1] || '',
+                        opening_ref: values[2] || '',
+                        opened: values[3] || '',
+                        market: values[4] || '',
+                        size: 0, // Size not in cleaned CSV
+                        opening_price: parseNumber(values[5]), // Opening price
+                        closing_price: parseNumber(values[6]), // Closing price
+                        pnl: parseNumber(values[7]), // P/L column
+                        total: parseNumber(values[8]), // Total column
+                        trade_date: values[3] ? values[3].split(' ')[0] : ''
+                    };
+                    
+                    csvTrades.push(trade);
+                }
             }
 
             // Only process closed trades - ignore open positions
