@@ -113,7 +113,7 @@ app.get('/api/statistics', (req, res) => {
                     opened: trade.opened
                 };
             }
-            tradesByOpeningRef[key].totalPnL += trade.pnl || 0;
+            tradesByOpeningRef[key].totalPnL += trade.total || 0;
             tradesByOpeningRef[key].trades.push(trade);
         });
 
@@ -147,7 +147,7 @@ app.get('/api/daily-stats', (req, res) => {
     db.all(`
         SELECT 
             SUBSTR(closed, 7, 4) || '-' || SUBSTR(closed, 4, 2) || '-' || SUBSTR(closed, 1, 2) as date,
-            SUM(pnl) as daily_pnl,
+            SUM(total) as daily_pnl,
             COUNT(*) as trade_count
         FROM trades 
         WHERE closing_ref != 'OPEN' AND closed IS NOT NULL AND closed != ''
