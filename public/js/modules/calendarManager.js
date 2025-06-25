@@ -166,7 +166,7 @@ class CalendarManager {
      * Add statistics display to day element
      */
     addDayStats(dayElement, dayStats) {
-        const pnl = dayStats.total_pnl || 0;
+        const pnl = dayStats.daily_pnl || dayStats.total_pnl || 0;
         
         // Add P&L display
         const dayPnl = document.createElement('div');
@@ -245,9 +245,9 @@ class CalendarManager {
 
         return {
             totalTrades: monthStats.reduce((sum, stat) => sum + (stat.trade_count || 0), 0),
-            totalPnL: monthStats.reduce((sum, stat) => sum + (stat.total_pnl || 0), 0),
-            profitableDays: monthStats.filter(stat => (stat.total_pnl || 0) > 0).length,
-            lossDays: monthStats.filter(stat => (stat.total_pnl || 0) < 0).length,
+            totalPnL: monthStats.reduce((sum, stat) => sum + (stat.daily_pnl || stat.total_pnl || 0), 0),
+            profitableDays: monthStats.filter(stat => (stat.daily_pnl || stat.total_pnl || 0) > 0).length,
+            lossDays: monthStats.filter(stat => (stat.daily_pnl || stat.total_pnl || 0) < 0).length,
             totalDaysTraded: monthStats.length
         };
     }

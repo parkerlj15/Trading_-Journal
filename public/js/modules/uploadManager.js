@@ -19,6 +19,8 @@ class UploadManager {
      * Handle CSV file upload
      */
     async handleFileUpload(file) {
+        console.log('UploadManager: handleFileUpload called with file:', file ? file.name : 'null');
+        
         if (this.isUploading) {
             this.app.showNotification('Upload already in progress', 'error');
             return;
@@ -40,8 +42,9 @@ class UploadManager {
 
             // Upload file
             const result = await this.uploadWithProgress(file);
+            console.log('Upload result:', result);
 
-            if (result.success) {
+            if (result.success !== false) { // Check for explicit false, not just falsy
                 this.showUploadResult(
                     result.message || 'File uploaded successfully!',
                     'success',
@@ -74,6 +77,8 @@ class UploadManager {
      * Upload file with progress tracking
      */
     async uploadWithProgress(file) {
+        console.log('UploadManager: Starting upload with XMLHttpRequest');
+        
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             const formData = new FormData();
@@ -83,29 +88,38 @@ class UploadManager {
             xhr.upload.addEventListener('progress', (e) => {
                 if (e.lengthComputable) {
                     const percentage = Math.round((e.loaded / e.total) * 100);
+                    console.log(`Upload progress: ${percentage}%`);
                     this.updateProgress(percentage, `Uploading... ${percentage}%`);
                 }
             });
 
             // Handle response
             xhr.addEventListener('load', () => {
+                console.log(`XHR response received. Status: ${xhr.status}, Response: ${xhr.responseText}`);
                 try {
-                    const result = JSON.parse(xhr.responseText);
-                    resolve(result);
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        const result = JSON.parse(xhr.responseText);
+                        resolve(result);
+                    } else {
+                        reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+                    }
                 } catch (error) {
-                    reject(new Error('Invalid response format'));
+                    reject(new Error('Invalid response format: ' + error.message));
                 }
             });
 
             xhr.addEventListener('error', () => {
+                console.error('XHR error event triggered');
                 reject(new Error('Network error during upload'));
             });
 
             xhr.addEventListener('abort', () => {
+                console.error('XHR abort event triggered');
                 reject(new Error('Upload cancelled'));
             });
 
             // Start upload
+            console.log('Starting XHR request to /api/upload-csv');
             xhr.open('POST', '/api/upload-csv');
             xhr.send(formData);
         });
@@ -120,6 +134,13 @@ class UploadManager {
         if (this.progressElements.container) {
             this.progressElements.container.style.display = 'block';
             this.updateProgress(0, 'Initializing upload...');
+            
+            // Hide upload results
+            if (this.progressElements.results) {
+                this.progressElements.results.style.display = 'none';
+            }
+        } else {
+            console.warn('Upload progress elements not found in DOM');
         }
     }
 
@@ -202,6 +223,20 @@ class UploadManager {
             this.progressElements.fill = document.getElementById('progressFill');
             this.progressElements.text = document.getElementById('progressText');
             this.progressElements.results = document.getElementById('uploadResults');
+            
+            // Debug logging
+            if (!this.progressElements.container) {
+                console.error('Upload progress container not found');
+            }
+            if (!this.progressElements.fill) {
+                console.error('Progress fill element not found');
+            }
+            if (!this.progressElements.text) {
+                console.error('Progress text element not found');
+            }
+            if (!this.progressElements.results) {
+                console.error('Upload results element not found');
+            }
         }
     }
 
@@ -209,29 +244,24 @@ class UploadManager {
      * Format upload statistics for display
      */
     formatUploadStats(result) {
-        if (!result.stats) return '';
+        if (!result) return '';
 
-        const stats = result.stats;
         const parts = [];
 
-        if (stats.processed) {
-            parts.push(`${stats.processed} records processed`);
+        if (result.totalProcessed) {
+            parts.push(`${result.totalProcessed} records processed`);
         }
 
-        if (stats.inserted) {
-            parts.push(`${stats.inserted} trades imported`);
+        if (result.newTrades) {
+            parts.push(`${result.newTrades} trades imported`);
         }
 
-        if (stats.updated) {
-            parts.push(`${stats.updated} trades updated`);
+        if (result.skippedClosedTrades) {
+            parts.push(`${result.skippedClosedTrades} records skipped`);
         }
 
-        if (stats.skipped) {
-            parts.push(`${stats.skipped} records skipped`);
-        }
-
-        if (stats.errors && stats.errors > 0) {
-            parts.push(`${stats.errors} errors encountered`);
+        if (result.errors && result.errors > 0) {
+            parts.push(`${result.errors} errors encountered`);
         }
 
         return parts.join(', ');

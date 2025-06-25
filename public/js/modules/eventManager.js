@@ -46,16 +46,25 @@ class EventManager {
         const browseBtn = document.getElementById('browseBtn');
 
         if (browseBtn && fileInput) {
+            console.log('EventManager: Setting up file upload events');
+            
             this.addEventListener(browseBtn, 'click', () => {
+                console.log('EventManager: Browse button clicked');
                 fileInput.click();
             });
 
             this.addEventListener(fileInput, 'change', (e) => {
+                console.log('EventManager: File input changed');
                 const file = e.target.files[0];
                 if (file) {
+                    console.log('EventManager: File selected:', file.name);
                     this.app.handleFileUpload(file);
+                } else {
+                    console.log('EventManager: No file selected');
                 }
             });
+        } else {
+            console.error('EventManager: Upload elements not found', { browseBtn, fileInput });
         }
 
         // Add drag and drop functionality

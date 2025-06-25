@@ -39,7 +39,7 @@ class ModalManager {
      */
     generateTradeDetailsHTML(trades, date, dayStats) {
         const formattedDate = this.app.formatDate(date);
-        const totalPnL = dayStats.total_pnl || 0;
+        const totalPnL = dayStats.daily_pnl || dayStats.total_pnl || 0;
         
         let html = `
             <div class="trade-details-header">

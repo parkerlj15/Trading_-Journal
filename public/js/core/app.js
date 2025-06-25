@@ -53,12 +53,14 @@ class TradingJournal {
 
     initializeModules() {
         // Initialize core modules
+        console.log('TradingJournal: Initializing modules...');
         this.dataManager = new DataManager();
         this.notificationManager = new NotificationManager();
         this.calendarManager = new CalendarManager(this);
         this.modalManager = new ModalManager(this);
         this.uploadManager = new UploadManager(this);
         this.eventManager = new EventManager(this);
+        console.log('TradingJournal: All modules initialized');
     }
 
     setupEventListeners() {
