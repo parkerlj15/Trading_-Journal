@@ -70,7 +70,17 @@ class DataManager {
      * Get trades for a specific date
      */
     async getTradesForDate(date) {
-        const formattedDate = date.toISOString().split('T')[0];
+        // Handle both Date objects and date strings consistently
+        let formattedDate;
+        if (date instanceof Date) {
+            // Use local date components to avoid timezone issues
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            formattedDate = `${year}-${month}-${day}`;
+        } else {
+            formattedDate = date; // Already a string in YYYY-MM-DD format
+        }
         return await this.apiRequest(`/trades-by-date/${formattedDate}`);
     }
 

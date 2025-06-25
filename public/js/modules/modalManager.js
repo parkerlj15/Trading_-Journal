@@ -195,7 +195,7 @@ class ModalManager {
                         <i class="fas fa-save"></i>
                         Save Notes
                     </button>
-                    <button class="cancel-notes-btn" onclick="this.closest('.modal').remove(); document.body.style.overflow = 'auto';">
+                    <button class="cancel-notes-btn">
                         <i class="fas fa-times"></i>
                         Cancel
                     </button>
@@ -257,7 +257,7 @@ class ModalManager {
                         <i class="fas fa-upload"></i>
                         Upload Image
                     </button>
-                    <button class="cancel-image-btn" onclick="this.closest('.modal').remove(); document.body.style.overflow = 'auto';">
+                    <button class="cancel-image-btn">
                         <i class="fas fa-times"></i>
                         Cancel
                     </button>
@@ -333,7 +333,7 @@ class ModalManager {
                         <i class="fas fa-save"></i>
                         Save Strategy
                     </button>
-                    <button class="cancel-strategy-btn" onclick="this.closest('.modal').remove(); document.body.style.overflow = 'auto';">
+                    <button class="cancel-strategy-btn">
                         <i class="fas fa-times"></i>
                         Cancel
                     </button>
@@ -420,7 +420,7 @@ class ModalManager {
      */
     createModal(title, className = '') {
         const modal = document.createElement('div');
-        modal.className = `modal ${className} active`;
+        modal.className = `modal ${className}`;
         modal.innerHTML = `
             <div class="modal-content">
                 <div class="modal-header">
@@ -437,14 +437,13 @@ class ModalManager {
 
         // Add close functionality
         const closeBtn = modal.querySelector('.close-modal');
-        closeBtn.addEventListener('click', () => this.hideModal());
-
-        // Close on backdrop click
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                this.hideModal();
-            }
+        closeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.hideModal();
         });
+
+        // Remove the backdrop click handler since it's handled by EventManager now
 
         return modal;
     }
@@ -453,16 +452,22 @@ class ModalManager {
      * Show modal
      */
     showModal(modal) {
-        if (this.currentModal) {
-            this.hideModal();
+        // Remove any existing modal immediately
+        if (this.currentModal && this.currentModal.parentNode) {
+            this.currentModal.parentNode.removeChild(this.currentModal);
         }
 
-        document.body.appendChild(modal);
+        // Clear any body overflow reset timeouts
         document.body.style.overflow = 'hidden';
+        
+        // Add new modal
+        document.body.appendChild(modal);
         this.currentModal = modal;
         
-        // Trigger animation
-        setTimeout(() => modal.classList.add('active'), 10);
+        // Show modal with animation
+        requestAnimationFrame(() => {
+            modal.classList.add('active');
+        });
     }
 
     /**

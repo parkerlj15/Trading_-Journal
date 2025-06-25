@@ -112,62 +112,57 @@ class EventManager {
      * Setup modal events
      */
     setupModalEvents() {
-        // Close modal when clicking outside
+        // Single document click handler for modal backdrop only
         this.addEventListener(document, 'click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                this.app.hidePositionsModal();
+            // Only handle clicks directly on modal backdrop
+            if (e.target.classList && e.target.classList.contains('modal')) {
+                // Double-check this is actually the modal backdrop
+                if (e.target.tagName === 'DIV' && e.target.classList.contains('modal')) {
+                    this.app.hidePositionsModal();
+                }
             }
         });
 
-        // Event delegation for all modal buttons (works with dynamically created modals)
+        // Separate handler specifically for modal buttons
         this.addEventListener(document, 'click', (e) => {
-            // Check if the click is inside a modal
-            const modal = e.target.closest('.modal');
-            if (!modal) return;
-
-            this.handleModalButtonClick(e);
+            // Only process if click is on a button
+            if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                const button = e.target.tagName === 'BUTTON' ? e.target : e.target.closest('button');
+                
+                // Only handle modal action buttons
+                if (button.classList.contains('add-note') || 
+                    button.classList.contains('add-image') || 
+                    button.classList.contains('add-strategy')) {
+                    
+                    const tradeId = button.dataset.tradeId;
+                    if (tradeId) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        
+                        // Delay execution to avoid conflicts
+                        setTimeout(() => {
+                            if (button.classList.contains('add-note')) {
+                                this.app.modalManager.showNotesModal(parseInt(tradeId));
+                            } else if (button.classList.contains('add-image')) {
+                                this.app.modalManager.showImageUpload(parseInt(tradeId));
+                            } else if (button.classList.contains('add-strategy')) {
+                                this.app.modalManager.showStrategyModal(parseInt(tradeId));
+                            }
+                        }, 50);
+                    }
+                }
+                
+                // Handle cancel buttons
+                if (button.classList.contains('cancel-notes-btn') || 
+                    button.classList.contains('cancel-image-btn') || 
+                    button.classList.contains('cancel-strategy-btn')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.app.modalManager.hideModal();
+                }
+            }
         });
-    }
-
-    /**
-     * Handle modal button clicks
-     */
-    handleModalButtonClick(e) {
-        // Find the button that was clicked
-        const button = e.target.closest('button') || e.target.closest('.action-btn');
-        if (!button) return;
-
-        // Check if it's a modal action button
-        const tradeId = button.dataset.tradeId || e.target.closest('[data-trade-id]')?.dataset.tradeId;
-
-        // Handle trade action buttons
-        if (tradeId && (
-            button.classList.contains('add-note') ||
-            button.classList.contains('add-image') ||
-            button.classList.contains('add-strategy')
-        )) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            if (button.classList.contains('add-note')) {
-                this.app.modalManager.showNotesModal(parseInt(tradeId));
-            } else if (button.classList.contains('add-image')) {
-                this.app.modalManager.showImageUpload(parseInt(tradeId));
-            } else if (button.classList.contains('add-strategy')) {
-                this.app.modalManager.showStrategyModal(parseInt(tradeId));
-            }
-            return;
-        }
-
-        // Handle other modal buttons (save, cancel, delete, etc.)
-        if (button.classList.contains('delete-image-btn')) {
-            const deleteTradeId = button.closest('[data-trade-id]')?.dataset.tradeId;
-            if (deleteTradeId) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.app.modalManager.deleteTradeImage(parseInt(deleteTradeId));
-            }
-        }
     }
 
     /**

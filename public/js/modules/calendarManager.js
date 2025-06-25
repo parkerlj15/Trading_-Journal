@@ -155,10 +155,11 @@ class CalendarManager {
      * Find statistics for a specific day
      */
     findDayStats(day, month, year, dailyStats) {
-        const targetDate = new Date(year, month, day).toISOString().split('T')[0];
+        // Create date string directly without timezone issues
+        const targetDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         return dailyStats.find(stat => {
-            const statDate = new Date(stat.date).toISOString().split('T')[0];
-            return statDate === targetDate;
+            // Direct string comparison - no timezone conversion
+            return stat.date === targetDate;
         });
     }
 
@@ -238,9 +239,13 @@ class CalendarManager {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
         
+        // Format target month as YYYY-MM
+        const targetMonth = `${year}-${String(month + 1).padStart(2, '0')}`;
+        
         const monthStats = dailyStats.filter(stat => {
-            const statDate = new Date(stat.date);
-            return statDate.getFullYear() === year && statDate.getMonth() === month;
+            // Extract year-month from date string (YYYY-MM-DD)
+            const statMonth = stat.date.substring(0, 7); // Gets YYYY-MM
+            return statMonth === targetMonth;
         });
 
         return {

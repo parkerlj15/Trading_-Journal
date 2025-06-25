@@ -51,16 +51,18 @@ function initializeEnhancements() {
         document.documentElement.style.scrollBehavior = 'smooth';
     }
     
-    // Add loading animation to buttons
-    document.addEventListener('click', function(e) {
-        const button = e.target.closest('button');
-        if (button && !button.classList.contains('loading')) {
-            button.classList.add('loading');
-            setTimeout(() => {
-                button.classList.remove('loading');
-            }, 1000);
-        }
-    });
+    // Loading animation disabled temporarily to debug modal issue
+    // document.addEventListener('click', function(e) {
+    //     const button = e.target.closest('button');
+    //     if (button && 
+    //         !button.classList.contains('loading') && 
+    //         !button.closest('.modal')) { // Exclude modal buttons
+    //         button.classList.add('loading');
+    //         setTimeout(() => {
+    //             button.classList.remove('loading');
+    //         }, 1000);
+    //     }
+    // });
     
     // Add fade-in animation to elements as they come into view
     if (window.IntersectionObserver) {
