@@ -139,12 +139,6 @@ class EventManager {
 
         // Check if it's a modal action button
         const tradeId = button.dataset.tradeId || e.target.closest('[data-trade-id]')?.dataset.tradeId;
-        
-        console.log('EventManager: Modal button clicked', { 
-            button: button.className, 
-            tradeId, 
-            target: e.target 
-        });
 
         // Handle trade action buttons
         if (tradeId && (
@@ -156,13 +150,10 @@ class EventManager {
             e.stopPropagation();
 
             if (button.classList.contains('add-note')) {
-                console.log('EventManager: Opening notes modal for trade', tradeId);
                 this.app.modalManager.showNotesModal(parseInt(tradeId));
             } else if (button.classList.contains('add-image')) {
-                console.log('EventManager: Opening image upload for trade', tradeId);
                 this.app.modalManager.showImageUpload(parseInt(tradeId));
             } else if (button.classList.contains('add-strategy')) {
-                console.log('EventManager: Opening strategy modal for trade', tradeId);
                 this.app.modalManager.showStrategyModal(parseInt(tradeId));
             }
             return;
