@@ -119,36 +119,63 @@ class EventManager {
             }
         });
 
-        // Modal body event delegation for trade actions
-        const modalBody = document.getElementById('modalBody');
-        if (modalBody) {
-            this.addEventListener(modalBody, 'click', (e) => {
-                this.handleModalButtonClick(e);
-            });
-        }
+        // Event delegation for all modal buttons (works with dynamically created modals)
+        this.addEventListener(document, 'click', (e) => {
+            // Check if the click is inside a modal
+            const modal = e.target.closest('.modal');
+            if (!modal) return;
+
+            this.handleModalButtonClick(e);
+        });
     }
 
     /**
      * Handle modal button clicks
      */
     handleModalButtonClick(e) {
-        const tradeId = e.target.closest('[data-trade-id]')?.dataset.tradeId;
-        if (!tradeId) return;
-
+        // Find the button that was clicked
         const button = e.target.closest('button') || e.target.closest('.action-btn');
         if (!button) return;
 
-        e.preventDefault();
-        e.stopPropagation();
+        // Check if it's a modal action button
+        const tradeId = button.dataset.tradeId || e.target.closest('[data-trade-id]')?.dataset.tradeId;
+        
+        console.log('EventManager: Modal button clicked', { 
+            button: button.className, 
+            tradeId, 
+            target: e.target 
+        });
 
-        if (button.classList.contains('add-note')) {
-            this.app.modalManager.showNotesModal(parseInt(tradeId));
-        } else if (button.classList.contains('add-image')) {
-            this.app.modalManager.showImageUpload(parseInt(tradeId));
-        } else if (button.classList.contains('add-strategy')) {
-            this.app.modalManager.showStrategyModal(parseInt(tradeId));
-        } else if (button.classList.contains('delete-image-btn')) {
-            this.app.modalManager.deleteTradeImage(parseInt(tradeId));
+        // Handle trade action buttons
+        if (tradeId && (
+            button.classList.contains('add-note') ||
+            button.classList.contains('add-image') ||
+            button.classList.contains('add-strategy')
+        )) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (button.classList.contains('add-note')) {
+                console.log('EventManager: Opening notes modal for trade', tradeId);
+                this.app.modalManager.showNotesModal(parseInt(tradeId));
+            } else if (button.classList.contains('add-image')) {
+                console.log('EventManager: Opening image upload for trade', tradeId);
+                this.app.modalManager.showImageUpload(parseInt(tradeId));
+            } else if (button.classList.contains('add-strategy')) {
+                console.log('EventManager: Opening strategy modal for trade', tradeId);
+                this.app.modalManager.showStrategyModal(parseInt(tradeId));
+            }
+            return;
+        }
+
+        // Handle other modal buttons (save, cancel, delete, etc.)
+        if (button.classList.contains('delete-image-btn')) {
+            const deleteTradeId = button.closest('[data-trade-id]')?.dataset.tradeId;
+            if (deleteTradeId) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.app.modalManager.deleteTradeImage(parseInt(deleteTradeId));
+            }
         }
     }
 
