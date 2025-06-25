@@ -44,7 +44,8 @@ class UploadManager {
             const result = await this.uploadWithProgress(file);
             console.log('Upload result:', result);
 
-            if (result.success !== false) { // Check for explicit false, not just falsy
+            // Check if upload was successful (like original implementation)
+            if (result.message && !result.error) {
                 this.showUploadResult(
                     result.message || 'File uploaded successfully!',
                     'success',
@@ -77,52 +78,72 @@ class UploadManager {
      * Upload file with progress tracking
      */
     async uploadWithProgress(file) {
-        console.log('UploadManager: Starting upload with XMLHttpRequest');
+        console.log('UploadManager: Starting upload with fetch');
         
-        return new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            const formData = new FormData();
-            formData.append('csvFile', file);
+        const formData = new FormData();
+        formData.append('csvFile', file);
 
-            // Track upload progress
-            xhr.upload.addEventListener('progress', (e) => {
-                if (e.lengthComputable) {
-                    const percentage = Math.round((e.loaded / e.total) * 100);
-                    console.log(`Upload progress: ${percentage}%`);
-                    this.updateProgress(percentage, `Uploading... ${percentage}%`);
-                }
+        // Start simulated progress
+        this.startSimulatedProgress();
+
+        try {
+            const response = await fetch('/api/upload-csv', {
+                method: 'POST',
+                body: formData
             });
 
-            // Handle response
-            xhr.addEventListener('load', () => {
-                console.log(`XHR response received. Status: ${xhr.status}, Response: ${xhr.responseText}`);
-                try {
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        const result = JSON.parse(xhr.responseText);
-                        resolve(result);
-                    } else {
-                        reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
-                    }
-                } catch (error) {
-                    reject(new Error('Invalid response format: ' + error.message));
-                }
-            });
+            console.log(`Fetch response received. Status: ${response.status}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
 
-            xhr.addEventListener('error', () => {
-                console.error('XHR error event triggered');
-                reject(new Error('Network error during upload'));
-            });
+            const result = await response.json();
+            console.log('Upload result:', result);
+            
+            // Complete progress
+            this.updateProgress(100, 'Upload complete!');
+            
+            return result;
+            
+        } catch (error) {
+            console.error('Upload error:', error);
+            throw error;
+        } finally {
+            this.stopSimulatedProgress();
+        }
+    }
 
-            xhr.addEventListener('abort', () => {
-                console.error('XHR abort event triggered');
-                reject(new Error('Upload cancelled'));
-            });
+    /**
+     * Start simulated progress (like original implementation)
+     */
+    startSimulatedProgress() {
+        let progress = 0;
+        this.progressInterval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress > 90) progress = 90;
+            
+            let message;
+            if (progress < 30) {
+                message = 'Uploading file...';
+            } else if (progress < 60) {
+                message = 'Cleaning data...';
+            } else {
+                message = 'Processing trades...';
+            }
+            
+            this.updateProgress(progress, message);
+        }, 200);
+    }
 
-            // Start upload
-            console.log('Starting XHR request to /api/upload-csv');
-            xhr.open('POST', '/api/upload-csv');
-            xhr.send(formData);
-        });
+    /**
+     * Stop simulated progress
+     */
+    stopSimulatedProgress() {
+        if (this.progressInterval) {
+            clearInterval(this.progressInterval);
+            this.progressInterval = null;
+        }
     }
 
     /**
@@ -163,8 +184,14 @@ class UploadManager {
      * Hide upload progress UI
      */
     hideUploadProgress() {
+        this.stopSimulatedProgress();
+        
         if (this.progressElements.container) {
             this.progressElements.container.style.display = 'none';
+        }
+        
+        if (this.progressElements.fill) {
+            this.progressElements.fill.style.width = '100%';
         }
     }
 
