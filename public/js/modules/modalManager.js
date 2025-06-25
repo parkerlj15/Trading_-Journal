@@ -14,9 +14,12 @@ class ModalManager {
      */
     async showTradeDetails(date, dayStats) {
         try {
+            console.log('ModalManager: showTradeDetails called', { date, dayStats });
             const trades = await this.app.dataManager.getTradesForDate(date);
+            console.log('ModalManager: Retrieved trades', trades);
             
             if (!trades || trades.length === 0) {
+                console.log('ModalManager: No trades found for date');
                 this.app.showNotification('No trades found for this date', 'error');
                 return;
             }
@@ -27,6 +30,7 @@ class ModalManager {
             modalBody.innerHTML = this.generateTradeDetailsHTML(trades, date, dayStats);
             
             this.showModal(modal);
+            console.log('ModalManager: Modal shown successfully');
             
         } catch (error) {
             console.error('Error showing trade details:', error);
@@ -63,26 +67,26 @@ class ModalManager {
      * Generate HTML for individual trade card
      */
     generateTradeCardHTML(trade) {
-        const pnl = trade.pnl || 0;
+        const pnl = trade.total || trade.pnl || 0;
         const pnlClass = pnl >= 0 ? 'positive' : 'negative';
         
         return `
             <div class="position-card" data-trade-id="${trade.id}">
                 <div class="position-header">
                     <div class="position-title">
-                        <div class="company-name">${trade.company || 'Unknown'}</div>
-                        <div class="position-date">${this.app.formatDate(trade.open_time)}</div>
+                        <div class="company-name">${trade.market || 'Unknown Market'}</div>
+                        <div class="position-date">Closed: ${trade.closed || 'N/A'}</div>
                     </div>
                     <div class="position-actions">
-                        <button class="action-btn add-note" title="Add Notes">
+                        <button class="action-btn add-note" title="Add Notes" data-trade-id="${trade.id}">
                             <i class="fas fa-sticky-note"></i>
                             Notes
                         </button>
-                        <button class="action-btn add-image" title="Add Image">
+                        <button class="action-btn add-image" title="Add Image" data-trade-id="${trade.id}">
                             <i class="fas fa-image"></i>
                             Image
                         </button>
-                        <button class="action-btn add-strategy" title="Set Strategy">
+                        <button class="action-btn add-strategy" title="Set Strategy" data-trade-id="${trade.id}">
                             <i class="fas fa-chess"></i>
                             Strategy
                         </button>
@@ -90,26 +94,32 @@ class ModalManager {
                 </div>
                 <div class="position-details">
                     <div class="detail-item">
-                        <span class="detail-label">P&L:</span>
-                        <span class="detail-value trade-pnl ${pnlClass}">${this.app.formatCurrency(pnl)}</span>
+                        <span class="detail-label">Opening Ref:</span>
+                        <span class="detail-value">${trade.opening_ref || 'N/A'}</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">Quantity:</span>
-                        <span class="detail-value">${trade.quantity || 'N/A'}</span>
+                        <span class="detail-label">Closing Ref:</span>
+                        <span class="detail-value">${trade.closing_ref || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Opened:</span>
+                        <span class="detail-value">${trade.opened || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Size:</span>
+                        <span class="detail-value">${trade.size || 'N/A'}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Entry Price:</span>
-                        <span class="detail-value">${trade.entry_price ? this.app.formatCurrency(trade.entry_price) : 'N/A'}</span>
+                        <span class="detail-value">${trade.opening_price ? this.app.formatCurrency(trade.opening_price) : 'N/A'}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Exit Price:</span>
-                        <span class="detail-value">${trade.exit_price ? this.app.formatCurrency(trade.exit_price) : 'N/A'}</span>
+                        <span class="detail-value">${trade.closing_price ? this.app.formatCurrency(trade.closing_price) : 'N/A'}</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">Status:</span>
-                        <span class="detail-value">
-                            <span class="status-badge imported">Imported</span>
-                        </span>
+                        <span class="detail-label">P&L:</span>
+                        <span class="detail-value trade-pnl ${pnlClass}">${this.app.formatCurrency(pnl)}</span>
                     </div>
                 </div>
                 ${this.generateTradeNotesHTML(trade)}

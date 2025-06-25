@@ -71,7 +71,7 @@ class DataManager {
      */
     async getTradesForDate(date) {
         const formattedDate = date.toISOString().split('T')[0];
-        return await this.apiRequest(`/trades/${formattedDate}`);
+        return await this.apiRequest(`/trades-by-date/${formattedDate}`);
     }
 
     /**

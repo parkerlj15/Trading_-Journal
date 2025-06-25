@@ -193,7 +193,9 @@ class CalendarManager {
     addDayClickHandler(dayElement, day, month, year, dayStats) {
         dayElement.style.cursor = 'pointer';
         dayElement.addEventListener('click', () => {
+            console.log('CalendarManager: Day clicked', { day, month, year, dayStats });
             const clickedDate = new Date(year, month, day);
+            console.log('CalendarManager: Formatted date', clickedDate);
             this.app.showTradeDetails(clickedDate, dayStats);
         });
 
