@@ -14,12 +14,9 @@ class ModalManager {
      */
     async showTradeDetails(date, dayStats) {
         try {
-            console.log('ModalManager: showTradeDetails called', { date, dayStats });
             const trades = await this.app.dataManager.getTradesForDate(date);
-            console.log('ModalManager: Retrieved trades', trades);
             
             if (!trades || trades.length === 0) {
-                console.log('ModalManager: No trades found for date');
                 this.app.showNotification('No trades found for this date', 'error');
                 return;
             }
@@ -30,7 +27,6 @@ class ModalManager {
             modalBody.innerHTML = this.generateTradeDetailsHTML(trades, date, dayStats);
             
             this.showModal(modal);
-            console.log('ModalManager: Modal shown successfully');
             
         } catch (error) {
             console.error('Error showing trade details:', error);
