@@ -1,0 +1,141 @@
+/* Responsive Styles - Media Queries and Mobile Adaptations */
+
+/* Enhanced responsive design */
+@media (max-width: 1024px) {
+    .calendar-stats-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .stats-section {
+        order: -1;
+    }
+    
+    .calendar-section {
+        padding: 20px;
+    }
+    
+    .stats-section {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .app-container {
+        padding: 12px;
+    }
+    
+    .nav-tabs {
+        margin-bottom: 16px;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .tab {
+        padding: 12px 16px;
+        font-size: 14px;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .header-buttons {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .upload-btn-header, .clear-db-btn-header, .quit-app-btn {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .calendar-stats-layout {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .calendar-section {
+        padding: 16px;
+        border-radius: 20px;
+    }
+    
+    .stats-section {
+        padding: 16px;
+        border-radius: 20px;
+    }
+    
+    .calendar-grid {
+        gap: 6px;
+    }
+    
+    .calendar-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .calendar-nav {
+        justify-content: center;
+    }
+    
+    .calendar-legend {
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .upload-area {
+        padding: 40px 20px;
+    }
+    
+    .upload-icon {
+        font-size: 48px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        border-radius: 20px;
+    }
+    
+    .modal-header {
+        padding: 24px 24px 0 24px;
+    }
+    
+    .modal-body {
+        padding: 0 24px 24px 24px;
+    }
+    
+    /* Mobile Responsiveness for Position Elements */
+    .position-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .action-btn {
+        justify-content: center;
+        padding: 10px 16px;
+    }
+    
+    .trade-image {
+        max-width: 100%;
+        max-height: 120px;
+    }
+    
+    .trade-image-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .notes-modal-content, .image-modal-content, .strategy-modal-content {
+        width: 95%;
+        margin: 20px auto;
+    }
+    
+    .notes-form textarea {
+        min-height: 150px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+} 

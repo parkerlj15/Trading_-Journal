@@ -1,0 +1,12 @@
+/* Main CSS File - Imports all modular CSS files */
+
+/* Import all CSS modules in the correct order */
+@import 'base.css';
+@import 'navigation.css';
+@import 'calendar.css';
+@import 'statistics.css';
+@import 'upload.css';
+@import 'positions.css';
+@import 'modals.css';
+@import 'notifications.css';
+@import 'responsive.css'; 
