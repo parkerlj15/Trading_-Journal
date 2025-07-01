@@ -16,20 +16,54 @@ class CalendarManager {
      * Render the calendar for the given date
      */
     render(currentDate, dailyStats) {
-        this.updateMonthDisplay(currentDate);
+        this.updateMonthDisplay(currentDate, dailyStats);
         this.renderCalendarGrid(currentDate, dailyStats);
     }
 
     /**
      * Update the month display in the header
      */
-    updateMonthDisplay(currentDate) {
+    updateMonthDisplay(currentDate, dailyStats) {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
         const monthDisplay = document.getElementById('currentMonth');
         
         if (monthDisplay) {
             monthDisplay.textContent = `${this.monthNames[month]} ${year}`;
+        }
+
+        // Update monthly stats
+        this.updateMonthlyStats(currentDate, dailyStats);
+    }
+
+    /**
+     * Update the monthly statistics display
+     */
+    updateMonthlyStats(currentDate, dailyStats) {
+        const monthStats = this.getMonthStats(currentDate, dailyStats);
+        const monthlyStatsElement = document.getElementById('monthlyStats');
+        
+        if (monthlyStatsElement) {
+            if (monthStats.totalTrades === 0) {
+                monthlyStatsElement.innerHTML = `
+                    <div class="monthly-pnl neutral">
+                        ${this.app.formatCurrency(0)}
+                    </div>
+                    <div class="monthly-details">
+                        No trades
+                    </div>
+                `;
+            } else {
+                const pnlClass = monthStats.totalPnL > 0 ? 'positive' : monthStats.totalPnL < 0 ? 'negative' : 'neutral';
+                monthlyStatsElement.innerHTML = `
+                    <div class="monthly-pnl ${pnlClass}">
+                        ${this.app.formatCurrency(monthStats.totalPnL)}
+                    </div>
+                    <div class="monthly-details">
+                        ${monthStats.totalTrades} trade${monthStats.totalTrades > 1 ? 's' : ''} • ${monthStats.profitableDays}W/${monthStats.lossDays}L
+                    </div>
+                `;
+            }
         }
     }
 
